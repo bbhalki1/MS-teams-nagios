@@ -25,7 +25,46 @@ notificationtype = options.notificationtype
 
 
 def main():
-    #print servicedesc,servicestate,hostalias,hoststate,hostoutput,serviceoutput,notificationtype
+    if hoststate is None:
+        sendServiceStateAlerts(hostalias,servicedesc,servicestate,serviceoutput,notificationtype)
+    else:
+        sendHostStateAlerts(hostalias,hoststate,hostoutput,notificationtype)
 
+def sendServiceStateAlerts(hostalias,servicedesc,servicestate,serviceoutput,notificationtype):
+    stateColor = "#dddddd"
+    exitState=3
+    if (servicestate=="WARNING"):
+        stateColor = "#f48400"
+        exitState=1
+    elif (servicestate == "CRITICAL"):
+        stateColor="#f40000"
+        exitState=2
+    elif(servicestate=="OK"):
+        stateColor="#00b71a"
+        exitState=0
+    else:
+        stateColor="#cc00de"
+        exitState=exitState
+    buildJson(servicedesc,hostalias,servicestate,exitState,stateColor)
+
+def buildJson(servicedesc,hostalias,servicestate,exitState,stateColor):
+    payload = {
+        "@type": "MessageCard",
+        "@context": "http://schema.org/extensions",
+        "summary": "SERVICEDESC on HOST is **STATE**",
+        "themeColor": stateColor,
+        "sections": [
+            {
+                "startGroup": true,
+                "title": servicedesc + ' on ' + hostalias  ' is ' ,
+                "facts": [
+                    { 
+                        "name": "Printing Press URL", 
+                        "value": "[Thruk](http://$nagiosServer/thruk/#cgi-bin/extinfo.cgi?type=EXITSTATUS&host=HOSTALIAS&service=SERVICEDESC)" 
+                    }
+                ]
+            }
+        ]
+    }
 
 main()
