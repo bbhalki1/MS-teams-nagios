@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import optparse
-import sys
 import requests
 
 parser = optparse.OptionParser("usage: ./msteams.py -w webhook -s servicedesc -c servicestate -a hostalias -o serviceoutput -n notificationtype")
@@ -33,13 +32,15 @@ def main():
         print servicestate
         sendServiceStateAlerts(webhook,hostalias,servicedesc,servicestate,serviceoutput,notificationtype)
     else:
+        print hostalias
+        print 'in else'
         sendHostStateAlerts(webhook,hostalias,hoststate,hostoutput,notificationtype)
 
 def sendServiceStateAlerts(webhook,hostalias,servicedesc,servicestate,serviceoutput,notificationtype):
     stateColor = "#dddddd"
     exitState=3
     if (servicestate=="WARNING"):
-        stateColor = "#f48400"
+        stateColor = "#ffff66"
         exitState=1
     elif (servicestate == "CRITICAL"):
         stateColor="#f40000"
@@ -52,6 +53,50 @@ def sendServiceStateAlerts(webhook,hostalias,servicedesc,servicestate,serviceout
         exitState=exitState
     buildJson(webhook,servicedesc,hostalias,servicestate,exitState,stateColor)
 
+
+def sendHostStateAlerts(webhook,hostalias,hoststate,hostoutput,notificationtype):
+    stateColor = "#dddddd"
+    exitState=3
+    if (hoststate=="WARNING"):
+        stateColor = "#ffff66"
+        exitState=1
+    elif (hoststate == "CRITICAL"):
+        stateColor="#f40000"
+        exitState=2
+    elif(hoststate=="OK"):
+        stateColor="#00b71a"
+        exitState=0
+    else:
+        stateColor="#cc00de"
+        exitState=exitState
+        
+    if ('dev' in hostalias):
+        nagiosServer = "printingpress.phx.gapinc.dev"
+    else:
+        nagiosServer = "printingpress.phx.gapinc.com"
+    payload = {
+        "@type": "MessageCard",
+        "@context": "http://schema.org/extensions",
+        "summary": hostalias + ' is ' + hoststate,
+        "themeColor": stateColor,
+        "sections": [
+            {
+                "title": hostalias + ' is ' + hoststate,
+                "facts": [
+                    {
+                        "name":"Reason",
+                        "value":hostoutput
+                    },
+                    { 
+                        "name": "Printing Press URL", 
+                        "value": "[Thruk](http://%s/thruk/#cgi-bin/extinfo.cgi?type=%s&host=%s)"%(nagiosServer,exitState,hostalias)
+                    }
+                ]
+            }
+        ]
+    }
+    print payload["sections"][0]["facts"]
+    #postToAlerts(webhook,payload)
 
 def buildJson(webhook,servicedesc,hostalias,servicestate,exitState,stateColor):
     if ('dev' in hostalias):
@@ -73,7 +118,7 @@ def buildJson(webhook,servicedesc,hostalias,servicestate,exitState,stateColor):
                     },
                     { 
                         "name": "Printing Press URL", 
-                        "value": "[Thruk](http://%s/thruk/#cgi-bin/extinfo.cgi?type=%s&host=%s&service=%s)"%(nagiosServer,exitState,hostalias,servicedesc) 
+                        "value": "[Thruk](http://%s/thruk/#cgi-bin/extinfo.cgi?type=%s&host=%s&service=%s)"%(nagiosServer,exitState,hostalias,servicedesc)
                     }
                 ]
             }
@@ -81,7 +126,6 @@ def buildJson(webhook,servicedesc,hostalias,servicestate,exitState,stateColor):
     }
     postToAlerts(webhook,payload)
     
-
 
 def postToAlerts(webhook,payload):
     r = requests.post(webhook,json=payload)
