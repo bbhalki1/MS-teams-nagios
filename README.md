@@ -1,3 +1,3 @@
 # MS-teams-nagios
 
-TODO
+Integration to post nagios alerts to Microsoft Teams
