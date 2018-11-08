@@ -71,9 +71,9 @@ def sendHostStateAlerts(webhook,hostalias,hoststate,hostoutput,notificationtype)
         exitState=exitState
         
     if ('dev' in hostalias):
-        nagiosServer = "printingpress.phx.gapinc.dev"
+        nagiosServer = "abc.dev"
     else:
-        nagiosServer = "printingpress.phx.gapinc.com"
+        nagiosServer = "acb.com"
     payload = {
         "@type": "MessageCard",
         "@context": "http://schema.org/extensions",
@@ -100,9 +100,9 @@ def sendHostStateAlerts(webhook,hostalias,hoststate,hostoutput,notificationtype)
 
 def buildJson(webhook,servicedesc,hostalias,servicestate,exitState,stateColor):
     if ('dev' in hostalias):
-        nagiosServer = "printingpress.phx.gapinc.dev"
+        nagiosServer = "abc.dev"
     else:
-        nagiosServer = "printingpress.phx.gapinc.com"
+        nagiosServer = "abc.com"
     payload = {
         "@type": "MessageCard",
         "@context": "http://schema.org/extensions",
